@@ -1,49 +1,55 @@
 #include "main.h"
-/*
- * _printf - Custom printf-like function
- * @format: Format string containing specifiers
- * Return: Total number of characters printed
+
+/**
+ * _printf - Custom version of the printf function
+ * @format: Format string consisting of characters and specifiers
+ * Return: The number of characters printed
  */
 int _printf(const char *format, ...)
 {
-int total_chars = 0; /*Total characters printed */
-va_list args_list; /*List for variable arguments */
-va_start(args_list, format);
-if (!format || !format[0] || (*format == '%' && !*(format + 1)))
-{
-return (-1);
+    int char_count = 0;  // Count of characters printed
+    va_list args;        // Argument list
+
+    va_start(args, format);
+    if (!format || (*format == '%' && *(format + 1) == '\0')) {
+        return -1;
+    }
+
+    while (*format) {
+        if (*format == '%') {
+            format++; // Move to the specifier character
+            switch (*format) {
+                case 'c':
+                    char_count += output_char(va_arg(args, int));
+                    break;
+                case 's':
+                    char_count += output_string(va_arg(args, char *));
+                    break;
+                case '%':
+                    output_char('%');
+                    char_count++;
+                    break;
+                case 'd':
+                case 'i':
+                    char_count += output_number(va_arg(args, int));
+                    break;
+                default:
+                    output_char('%');
+                    char_count++;
+                    if (*format) {
+                        output_char(*format);
+                        char_count++;
+                    }
+                    break;
+            }
+        } else {
+            output_char(*format);
+            char_count++;
+        }
+        format++;
+    }
+
+    va_end(args);
+    return char_count;
 }
-for (const char *current_char = format; *current_char; current_char++)
-{
-if (*current_char == '%')
-{
-current_char++;
-switch (*current_char)
-{
-case 'c':
-total_chars += print_character(va_arg(args_list, int));
-break;
-case 's':
-total_chars += print_str(va_arg(args_list, char *);
-break;
-case '%':
-total_chars += print_percent_sign();
-break;
-case 'd':
-case 'i':
-total_chars += print_integer(va_arg(args_list, int));
-break;
-default:
-total_chars += print_unhandled_specifier(current_char);
-break;  
-}
-}
-else
-{
-print_character(*current_char);
-total_chars++;
-}
-}
-va_end(args_list);
-return (total_chars);
-}
+
